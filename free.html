@@ -1,9 +1,30 @@
 <!DOCTYPE html>  
 <meta charset="utf-8" /> 
 <title>Free</title>
+<style>
+    svg {
+        font: 10px sans-serif;
+    }
+
+    .line {
+        fill: none;
+        stroke: #000;
+        stroke-width: 1.5px;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+</style>
+<script src="http://d3js.org/d3.v3.min.js"></script>
 <script language="javascript" type="text/javascript"> 
     var wsUri = "ws://192.168.192.169:12345/"; 
-    var output; 
+    var chart;
+    var output;
+    var xVal = 1;
 
     function init() { 
         output = document.getElementById("output");
@@ -27,7 +48,7 @@ function onClose(evt) {
 }
 
 function onMessage(evt) {
-    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    updateData(JSON.parse(evt.data));
 }  
 
 function onError(evt) { 
@@ -41,8 +62,85 @@ function writeToScreen(message) {
     output.appendChild(pre); 
 }  
 
-window.addEventListener("load", init, false); 
+var data = [0];
+var path;
+var line;
 
+function chart(domain, interpolation) {
+
+    var margin = {top: 20, right: 20, bottom: 20, left: 100},
+        width = 960 - margin.left - margin.right,
+        height = 600 - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+        .domain(domain)
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .domain([0, 500])
+        .range([height, 0]);
+
+    line = d3.svg.line()
+        .interpolate(interpolation)
+        .x(function(d, i) { return x(i); })
+        .y(function(d, i) { return y(d); });
+
+    var svg = d3.select("body").append("p").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+        .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+
+    svg.append("g")
+        .attr("class", "axis")
+        .call(d3.svg.axis().scale(y).ticks(5).orient("left"));
+
+    path = svg.append("g")
+        .attr("clip-path", "url(#clip)")
+        .append("path")
+        .data([data])
+        .attr("class", "line")
+        .attr("d", line)
+
+    tick(path, line, data, x);
+}
+
+function tick(path, line, data, x) {
+    // redraw the line, and then slide it to the left
+    path
+        .attr("d", line)
+        .attr("transform", null)
+        .transition()
+        .duration(1000)
+        .ease("linear")
+        .each("end", function() { tick(path, line, data, x);}); 
+
+    // pop the old data point off the front
+    if (data.length > 40) {
+        path.attr("transform", "translate(" + x(-1) + ")")
+            data.shift();
+        }
+    }
+
+function updateData(memory) {
+    data.push(parseInt(memory['Used']));
+}
 </script>
 
-<div id="output"></div>
+    <header>
+    </header>
+
+<script>
+    chart([0, 40 - 1], "linear");
+    testWebSocket();
+</script>
+    <footer>
+    </footer>
+
+<div id="output">
