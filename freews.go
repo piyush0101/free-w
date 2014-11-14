@@ -28,7 +28,7 @@ func Free(ws *websocket.Conn) {
         if err != nil {
             fmt.Println("Can't send")
         }
-        time.Sleep(5000 * time.Millisecond)
+        time.Sleep(1000 * time.Millisecond)
     }
 }
 
