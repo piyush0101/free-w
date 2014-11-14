@@ -62,7 +62,7 @@ function writeToScreen(message) {
     output.appendChild(pre); 
 }  
 
-var data = [0];
+var data = [];
 var path;
 var line;
 
@@ -137,8 +137,8 @@ function updateData(memory) {
     </header>
 
 <script>
-    chart([0, 40 - 1], "linear");
     testWebSocket();
+    chart([0, 40 - 1], "linear");
 </script>
     <footer>
     </footer>
