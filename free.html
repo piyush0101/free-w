@@ -28,10 +28,10 @@
 
     function init() { 
         output = document.getElementById("output");
-        testWebSocket();
+        initializeWebSocket();
     }
 
-function testWebSocket() {
+function initializeWebSocket() {
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) { onOpen(evt) }; 
     websocket.onclose = function(evt) { onClose(evt) };
@@ -137,7 +137,7 @@ function updateData(memory) {
     </header>
 
 <script>
-    testWebSocket();
+    init();
     chart([0, 40 - 1], "linear");
 </script>
     <footer>
